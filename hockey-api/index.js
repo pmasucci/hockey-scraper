@@ -1,12 +1,14 @@
 const cheerio = require("cheerio");
 const axios = require("axios");
 const urlParser = require("url");
+const fs = require("fs");
 
 const selectors = require("./selectors");
 const teams = require("./teams");
 
 main();
 const games = [];
+const players = {};
 
 async function main() {
   doThatThing(17);
@@ -24,6 +26,13 @@ async function doThatThing(year) {
     // we got all the games in an array. now what???
     // I guess loop through and tabulate all of the player data?
     // probably better to do that in the Process Games function, no?
+    fs.writeFile("players.json", JSON.stringify(players), err => {
+      if (err) {
+        console.log("oopsie!!!");
+        throw err;
+      }
+      console.log("players.json written");
+    });
   } catch (e) {
     console.log(e);
   }
@@ -51,27 +60,40 @@ async function processGame(gameSheet) {
 }
 
 function getPlayers(roster, $) {
-  const players = {};
   roster.each((i, elem) => {
     const cells = $(elem).children();
-    const player = {};
-    let playerName;
     if (i === 0 || (cells.length !== 8 && cells.length !== 3)) {
       return;
-    } else if (cells.length === 8) {
-      playerName = cells.eq(1).text();
+    }
+
+    const playerName = cells.eq(1).text();
+
+    if (!players[playerName]) {
+      players[playerName] = {
+        goals: 0,
+        assists: 0,
+        points: 0,
+        shotsOnGoal: 0,
+        plusMinus: 0,
+        gamesPlayed: 0
+      };
+    }
+
+    const player = players[playerName];
+
+    if (cells.length === 8) {
       player.number = parseInt(cells.eq(0).text());
-      player.goals = parseInt(cells.eq(2).text());
-      player.assists = parseInt(cells.eq(3).text());
-      player.points = parseInt(cells.eq(4).text());
-      player.shotsOnGoal = parseInt(cells.eq(6).text());
-      player.plusMinus = cells.eq(7).text();
+      player.goals += parseInt(cells.eq(2).text());
+      player.assists += parseInt(cells.eq(3).text());
+      player.points += parseInt(cells.eq(4).text());
+      player.shotsOnGoal += parseInt(cells.eq(6).text());
+      player.plusMinus +=
+        cells.eq(7).text() === "E" ? 0 : parseInt(cells.eq(7).text());
+      player.gamesPlayed += 1;
     } else if (cells.length === 3) {
-      playerName = cells.eq(1).text();
       player.number = parseInt(cells.eq(0).text());
       player.didNotPlay = true;
     }
-    players[playerName] = player;
   });
 
   return players;
@@ -80,7 +102,7 @@ function getPlayers(roster, $) {
 async function getGameSheets(gameUrls, batchSize) {
   try {
     const gameSheets = [];
-    for (let i = 0; i < 1; i += batchSize) {
+    for (let i = 0; i < gameUrls.length; i += batchSize) {
       // change the 1 here back to gameUrls.length
       let axiosPromises = [];
       for (let x = 0; x < batchSize && i + x < gameUrls.length; x++) {
