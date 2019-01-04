@@ -7,5 +7,6 @@ module.exports = {
     "body > table > tbody > tr:nth-child(7) > td > table > tbody > tr:nth-child(1) > td:nth-child(1) > table > tbody > tr",
   homeRoster:
     "body > table > tbody > tr:nth-child(7) > td > table > tbody > tr:nth-child(1) > td:nth-child(2) > table > tbody > tr",
-  goalTable: "body > table > tbody > tr:nth-child(5) > td > table"
+  goalTable: "body > table > tbody > tr:nth-child(5) > td > table > tbody",
+  goals: "body > table > tbody > tr:nth-child(5) > td > table > tbody"
 };
