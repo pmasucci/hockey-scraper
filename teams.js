@@ -21,7 +21,7 @@ module.exports = {
   CLK: `Clarkson`,
   CNQ: `Concordia (QC)`,
   CNS: `Canisius`,
-  CON: `Connecticut`,
+  CON: `UConn`,
   COR: `Cornell`,
   DAL: `Dalhousie`,
   DAR: `Dartmouth`,
